@@ -49,10 +49,8 @@ readFile() {
                 readLineNumber=$(( readLineNumber + 2 ))
                 break
             elif [ "$matchVar" = "allowed" ]; then
-                userVlan["$i"]=$(awk 'NR==3{print $5}' "$sourceFile" )
-#                trunks=\"${trunks}\"
-#                userVlan["$i"]=${trunks}
-                readLineNumber=$(( readLineNumber + 1 ))
+                userVlan["$i"]="'$(awk 'NR==3{print $5}' "$sourceFile" )'"
+                readLineNumber=$(( readLineNumber - 1 ))
                 break
             else
                 readLineNumber=$(( readLineNumber + 1 ))
@@ -61,6 +59,8 @@ readFile() {
         findObj "3"
         if [ "$matchVar" = "vlan" ]; then
             voipVlan["$i"]=$(awk 'NR==5{print $4}' "$sourceFile" )
+#        elif [ "$matchVar" = "native" ]; then
+#           voipVlan["$i"]=$(awk 'NR==5{print $5}' "$sourceFile" )
         else
             voipVlan["$i"]=""
         fi
