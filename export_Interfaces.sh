@@ -19,7 +19,7 @@ findObj() {
     matchVar=$(awk -v line="$readLineNumber" -v obj="$1" 'NR==line{print $obj}' "$sourceFile" )
 }
 
-readFile() {
+makeCSV() {
     fileName="$1" ; fileName=$(basename "${fileName%.*}")
     grep -n '^!' "$1" | awk -F':' '{print $1}' > ./Array.txt ; mapfile -t chopArray < ./Array.txt ; rm -f ./Array.txt
     cutStart="0"
@@ -73,6 +73,17 @@ readFile() {
     echo "Interface csv for switch $fileName complete"
 }
 
+makeCleanCSV() {
+    echo "interface,description,userVlan,voipVlan" >> ./"$fileName"_c.csv
+    for i in $(seq 1 ${#userVlan[@]} ); do
+        if [ -n "${userVlan[$i]}" ]; then
+            echo "${interface[$i]},${description[$i]},${userVlan[$i]},${voipVlan[$i]}" >> ./"$fileName"_c.csv
+        fi
+    done
+    echo "Cleaned up interface csv for switch $fileName complete"
+}
+
+
 if [ "$1" = "m" ]; then
     if [ ! -d ./configs ]; then
         echo "no configs directory"
@@ -80,11 +91,12 @@ if [ "$1" = "m" ]; then
     fi
     makeDir
     for i in ./configs/*; do
-        readFile "$i"
+        makeCSV "$i"
+        makeCleanCSV
     done
 else
     makeDir
-    readFile "$1"
+    makeCSV "$1"
 fi
 
 rm -fr ./interfaces/
