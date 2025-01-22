@@ -23,11 +23,14 @@ readFile() {
     fileName="$1" ; fileName=$(basename "${fileName%.*}")
     grep -n '^!' "$1" | awk -F':' '{print $1}' > ./Array.txt ; mapfile -t chopArray < ./Array.txt ; rm -f ./Array.txt
     cutStart="0"
+    echo "Creating interface array now"
     for i in $(seq 0 $((${#chopArray[@]} - 1 )) ); do
         cutEnd=${chopArray[$i]}
         awk -v startVar="$cutStart" -v endVar="$cutEnd" 'NR >= startVar && NR <= endVar' "$1" > ./interfaces/int_"${i}".txt
         cutStart=$(( cutEnd + 1 ))
     done
+    echo "Interface array for switch $fileName complete"
+    echo "Creating interface csv now"
     echo "interface,description,userVlan,voipVlan" >> ./"$fileName".csv
     for i in $(seq 0 $((${#chopArray[@]} - 1 )) ); do
         sourceFile="./interfaces/int_${i}.txt"
@@ -67,6 +70,7 @@ readFile() {
         echo "${interface[$i]},${description[$i]},${userVlan[$i]},${voipVlan[$i]}" >> ./"$fileName".csv
         rm "$sourceFile"
     done
+    echo "Interface csv for switch $fileName complete"
 }
 
 if [ "$1" = "m" ]; then
