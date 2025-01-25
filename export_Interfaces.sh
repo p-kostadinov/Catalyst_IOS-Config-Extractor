@@ -10,9 +10,15 @@ if [ -z "$1" ]; then
 fi
 
 makeDir() {
-    if [ ! -d ./interfaces ]; then
-        mkdir ./interfaces/
+    if [ ! -d "$1" ]; then
+        mkdir "$1"
     fi
+}
+
+createDirs() {
+    makeDir "./interfaces"
+    makeDir "./interfacesCSV"
+    makeDir "./interfacesCSV_c"
 }
 
 findObj() {
@@ -31,7 +37,7 @@ makeCSV() {
     done
     echo "Interface array for switch $fileName complete"
     echo "Creating interface csv now"
-    echo "interface,description,userVlan,voipVlan" >> ./"$fileName".csv
+    echo "interface,description,userVlan,voipVlan" >> ./interfacesCSV/"$fileName".csv
     for i in $(seq 0 $((${#chopArray[@]} - 1 )) ); do
         sourceFile="./interfaces/int_${i}.txt"
         readLineNumber="2"
@@ -67,36 +73,36 @@ makeCSV() {
         else
             voipVlan["$i"]=""
         fi
-        echo "${interface[$i]},${description[$i]},${userVlan[$i]},${voipVlan[$i]}" >> ./"$fileName".csv
+        echo "${interface[$i]},${description[$i]},${userVlan[$i]},${voipVlan[$i]}" >> ./interfacesCSV/"$fileName".csv
         rm "$sourceFile"
     done
     echo "Interface csv for switch $fileName complete"
 }
 
-makeCleanCSV() {
-    echo "interface,description,userVlan,voipVlan" >> ./"$fileName"_c.csv
+cleanCSV() {
+    echo "interface,description,userVlan,voipVlan" >> ./interfacesCSV_c/"$fileName".csv
     for i in $(seq 1 ${#userVlan[@]} ); do
         if [ -n "${userVlan[$i]}" ]; then
-            echo "${interface[$i]},${description[$i]},${userVlan[$i]},${voipVlan[$i]}" >> ./"$fileName"_c.csv
+            echo "${interface[$i]},${description[$i]},${userVlan[$i]},${voipVlan[$i]}" >> ./interfacesCSV_c/"$fileName".csv
         fi
     done
     echo "Cleaned up interface csv for switch $fileName complete"
 }
-
 
 if [ "$1" = "m" ]; then
     if [ ! -d ./configs ]; then
         echo "no configs directory"
         exit 1
     fi
-    makeDir
+    createDirs
     for i in ./configs/*; do
         makeCSV "$i"
-        makeCleanCSV
+        cleanCSV
     done
 else
-    makeDir
+    createDirs
     makeCSV "$1"
+    cleanCSV
 fi
 
 rm -fr ./interfaces/
